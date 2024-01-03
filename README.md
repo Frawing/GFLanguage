@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <div align="center">
 
 # GFLanguage
@@ -60,6 +59,3 @@ $$
 $$
 
 </div>
-=======
-# GFLanguage
->>>>>>> a3f0de8441e8d9e3af138c650e042a61a8dc3bc0
