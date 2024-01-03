@@ -1,4 +1,0 @@
-let y = 12;
-let x = y;
-
-exit(x);

@@ -16,11 +16,8 @@ enum TokenType
     CLOSE_PAREN,
     SEMI,
     EQUAL,
-<<<<<<< HEAD
     PLUS,
     STAR,
-=======
->>>>>>> a3f0de8441e8d9e3af138c650e042a61a8dc3bc0
 
     INTEGER
 };
@@ -84,7 +81,6 @@ class Tokenizer
                     buf.clear();
                 }
 
-<<<<<<< HEAD
                 else if(peek().value() == '+'){
                     consume();
                     tokens.push_back({.type = TokenType::PLUS});
@@ -97,8 +93,6 @@ class Tokenizer
                     buf.clear();
                 }
 
-=======
->>>>>>> a3f0de8441e8d9e3af138c650e042a61a8dc3bc0
                 else if(peek().value() == ';'){
                     consume();
                     tokens.push_back({.type = TokenType::SEMI});
