@@ -16,6 +16,8 @@ enum TokenType
     CLOSE_PAREN,
     SEMI,
     EQUAL,
+    PLUS,
+    STAR,
 
     INTEGER
 };
@@ -76,6 +78,18 @@ class Tokenizer
                 else if(peek().value() == '='){
                     consume();
                     tokens.push_back({.type = TokenType::EQUAL});
+                    buf.clear();
+                }
+
+                else if(peek().value() == '+'){
+                    consume();
+                    tokens.push_back({.type = TokenType::PLUS});
+                    buf.clear();
+                }
+
+                else if(peek().value() == '*'){
+                    consume();
+                    tokens.push_back({.type = TokenType::STAR});
                     buf.clear();
                 }
 

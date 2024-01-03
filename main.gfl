@@ -1,0 +1,6 @@
+let x = 12;
+let y = 3;
+
+let z = x + y;
+
+exit(z);

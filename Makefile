@@ -1,12 +1,11 @@
-ARG = ./GFL/main.gfl
-
 all: clean compile clear run
 
 compile:
-	cmake --build build/
+#cmake --build build/
+	g++ -fpermissive scr/main.cpp -o COMPILER -std=c++20
 
 run:
-	./build/GCompiler ./GFL/main.gfl
+	./COMPILER
 	nasm -felf64 out.asm
 	ld -o PROGRAM out.o
 

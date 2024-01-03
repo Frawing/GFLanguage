@@ -1,37 +1,54 @@
 #pragma once
 
 #include <variant>
+#include "Arena.h"
 #include "Token.h"
 
-struct NodeExprInt{
+struct NodeExpr;
+
+struct NodeTermInt{
     Token integer;
 };
 
-struct NodeExprIdent{
+struct NodeTermIdent{
     Token indent;
 };
 
+struct NodeTerm{
+    std::variant<NodeTermInt*,
+                 NodeTermIdent*> value;
+};
+
+struct NodeBinExprAdd{
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
+struct NodeBinExpr{
+    NodeBinExprAdd* value;
+};
+
 struct NodeExpr{
-    std::variant<NodeExprInt,
-                 NodeExprIdent> value;
+    std::variant<NodeTerm*,
+                 NodeBinExpr*> value;
 };
 
 struct NodeStmtExit{
-    NodeExpr expr;
+    NodeExpr* expr;
 };
 
 struct NodeStmtLet{
     Token ident;
-    NodeExpr expr;
+    NodeExpr* expr;
 };
 
 struct NodeStmt{
-    std::variant<NodeStmtExit,
-                 NodeStmtLet> stmt;
+    std::variant<NodeStmtExit*,
+                 NodeStmtLet*> stmt;
 };
 
 struct NodeProg{
-    std::vector<NodeStmt> stmts;
+    std::vector<NodeStmt*> stmts;
 };
 
 class Parser
@@ -39,27 +56,72 @@ class Parser
     
     public:
         
-        inline explicit Parser(const std::vector<Token> p_tokens) : tokens(p_tokens) {}
+        inline explicit Parser(const std::vector<Token> p_tokens) 
+            : tokens(p_tokens), allocator(1024 * 1024 * 4) 
+        {
 
-        inline std::optional<NodeExpr> parse_expr(){
+        }
+
+        inline std::optional<NodeTerm*> parse_term(){
             if(peek().has_value() && peek().value().type == TokenType::INTEGER){
-                return NodeExpr{.value = NodeExprInt{.integer = consume()}};
+                auto node_term = allocator.alloc<NodeTerm>();
+                auto node_term_int = allocator.alloc<NodeTermInt>();
+                node_term_int->integer = consume();
+                node_term->value = node_term_int;
+                return node_term;
             }
             else if(peek().has_value() && peek().value().type == TokenType::IDENT){
-                return NodeExpr{.value = NodeExprIdent{.indent = consume()}};
+                auto node_term = allocator.alloc<NodeTerm>();
+                auto node_term_ident = allocator.alloc<NodeTermIdent>();
+                node_term_ident->indent = consume();
+                node_term->value = node_term_ident;
+                return node_term;
             }
             else{
                 return {};
             }
         }
 
-        inline std::optional<NodeStmt> parse_stmt(Error errorHandler)
+        inline std::optional<NodeExpr*> parse_expr(){
+            if(auto term = parse_term()){
+                if(peek().has_value() && peek().value().type == TokenType::PLUS){
+                    std::cout << "true" << std::endl;
+                    auto bin_expr_add = allocator.alloc<NodeBinExprAdd>();
+                    auto lhs_expr = allocator.alloc<NodeExpr>();
+                    lhs_expr->value = term.value();
+                    bin_expr_add->lhs = lhs_expr;
+                    consume();
+                    if(auto rhs = parse_expr()){
+                        bin_expr_add->rhs = rhs.value();
+                        auto expr = allocator.alloc<NodeExpr>();
+                        auto bin_expr = allocator.alloc<NodeBinExpr>();
+                        bin_expr->value = bin_expr_add;
+                        expr->value = bin_expr;
+                        return expr;
+                    }else{
+                        std::cerr << "Expected expression!" << std::endl;
+                        exit(1);
+                    }
+                }
+                else{
+                    auto expr = allocator.alloc<NodeExpr>();
+                    expr->value = term.value();
+                    return expr;
+                }
+            }
+            else{
+                return {};
+            }
+        }
+
+        inline std::optional<NodeStmt*> parse_stmt(Error errorHandler)
         {
+            auto stmt = allocator.alloc<NodeStmt>();
+
             if(peek().has_value() && peek().value().type == TokenType::EXIT)
             {
                 consume();
 
-                NodeStmtExit stmt;
 
                 if(peek().has_value() && peek().value().type == TokenType::OPEN_PAREN){
                     consume();
@@ -70,9 +132,11 @@ class Parser
                 }
 
                 if(auto node_expr = parse_expr()){
-                    stmt = NodeStmtExit{.expr = node_expr.value()};
+                    auto stmt_exit = allocator.alloc<NodeStmtExit>();
+                    stmt_exit->expr = node_expr.value();
+                    stmt->stmt = stmt_exit;
                 }else{
-                    std::cerr << "The parameter must be an integer!" << std::endl;
+                    std::cerr << "Unexpected value!" << std::endl;
                     exit(1);
                 }
 
@@ -91,21 +155,21 @@ class Parser
                     errorHandler.print_error(ErrorType::MISSED);
                     exit(1);
                 }
-
-                return NodeStmt{.stmt = stmt};
+                std::cout << "Trovato exit statment" << std::endl; // ?
+                return stmt;
             }
             else if(peek().has_value() && peek().value().type == TokenType::LET)
             {
                 consume();
 
-                NodeStmtLet stmt;
-
                 if(peek().has_value() && peek().value().type == TokenType::IDENT){
                     if(peek(1).has_value() && peek(1).value().type == TokenType::EQUAL){
-                        stmt = NodeStmtLet{.ident = consume()};
+                        auto stmt_let = allocator.alloc<NodeStmtLet>();
+                        stmt_let->ident = consume();
                         consume();
                         if(auto node_expr = parse_expr()){
-                            stmt.expr = node_expr.value();
+                            stmt_let->expr = node_expr.value();
+                            stmt->stmt = stmt_let;
                         }else{
                             errorHandler.value = "";
                             errorHandler.print_error(ErrorType::INVALID_EXPRESSION);
@@ -122,7 +186,7 @@ class Parser
                     exit(1);
                 }
 
-                return NodeStmt{.stmt = stmt};
+                return stmt;
             }else{
                 return {};
             }
@@ -160,5 +224,6 @@ class Parser
 
         const std::vector<Token> tokens;
         size_t index = 0;
+        ArenaAllocator allocator;
 
 };

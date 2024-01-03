@@ -1,5 +1,4 @@
 #include <fstream>
-
 #include "include/Generator.h"
 
 Error errorHandler;
@@ -10,17 +9,25 @@ int main(int argc, char* argv[]){
     //     std::cerr << "Specificare il file '.gfl'!" << std::endl;
     //     exit(1);
     // }
-    std::string file_name = "../GFL/main.gfl";
+    std::string file_name = "main.gfl";
     // std::cin >> file_name;
 
-    std::string file_content;
-    std::stringstream content_stream;
     std::fstream file(file_name, std::ios::in);
-    content_stream << file.rdbuf();
-    file_content = content_stream.str();
+
+    if (!file.is_open()) {
+        std::cerr << "Errore nell'apertura del file." << std::endl;
+        return 1;
+    }
+
+    std::string file_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
 
     Tokenizer tokenizer(file_content);
     std::vector<Token> tokens = tokenizer.tokenize(errorHandler);
+
+    for(auto t : tokens){
+        std::cout << t.type << std::endl;
+    }
 
     Parser parser(tokens);
     std::optional<NodeProg> tree = parser.parse_program(errorHandler);

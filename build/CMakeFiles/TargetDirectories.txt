@@ -1,3 +1,0 @@
-/home/gfrawing/Desktop/GFLanguage/build/CMakeFiles/GCompiler.dir
-/home/gfrawing/Desktop/GFLanguage/build/CMakeFiles/edit_cache.dir
-/home/gfrawing/Desktop/GFLanguage/build/CMakeFiles/rebuild_cache.dir
