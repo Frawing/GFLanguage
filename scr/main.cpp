@@ -5,14 +5,17 @@
 Error errorHandler;
 int main(int argc, char* argv[]){
 
-    // if(argc < 2){
-    //     std::cerr << "Specificare il file '.gfl'!" << std::endl;
-    //     exit(1);
-    // }
-    
-    // std::cin >> file_name;
+    if(argc < 2){
+        std::cerr << "Specificare il file '.gfl'!" << std::endl;
+        exit(1);
+    }
 
-    std::string file_name = "main.gfl";
+    std::string out_file_path = "./";
+    if(argc == 3){
+        out_file_path = argv[2];
+    }
+
+    std::string file_name = argv[1];
 
     std::fstream file(file_name, std::ios::in);
     if (!file.is_open()) {
@@ -34,7 +37,7 @@ int main(int argc, char* argv[]){
     std::optional<NodeProg> tree = parser.parse_program(errorHandler);
 
     Generator generator(tree.value());
-    std::fstream out_file("./out.asm", std::ios::out);
+    std::fstream out_file(out_file_path + "out.asm", std::ios::out);
     out_file << generator.gen_prog();
     return 0;
 }
