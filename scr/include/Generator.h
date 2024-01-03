@@ -2,8 +2,8 @@
 
 #include <sstream>
 #include <unordered_map>
-#include "Parser.h"
 #include <cassert>
+#include "Parser.h"
 
 class Generator{
 

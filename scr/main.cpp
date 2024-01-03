@@ -1,4 +1,5 @@
 #include <fstream>
+#include "include/Arena.h"
 #include "include/Generator.h"
 
 Error errorHandler;

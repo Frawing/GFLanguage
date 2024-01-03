@@ -1,8 +1,9 @@
 #pragma once
 
 #include <variant>
-#include "Arena.h"
 #include "Token.h"
+
+struct NodeExpr;
 
 struct NodeTermInt{
     Token integer;
@@ -44,7 +45,6 @@ struct NodeStmt{
     std::variant<NodeStmtExit*,
                  NodeStmtLet*> stmt;
 };
-
 
 struct NodeProg{
     std::vector<NodeStmt*> stmts;
@@ -176,6 +176,7 @@ class Parser
                         }
                     }
                 }
+
                 if(peek().has_value() && peek().value().type == TokenType::SEMI){
                     consume();
                 }else{
