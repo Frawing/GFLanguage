@@ -1,0 +1,12 @@
+#! Comment
+
+&*
+    This is a
+    multi-line comment
+*&
+
+#! exit(0);      #! This is a comment
+&* exit(1); *&   #! And also this
+
+let x = (10 - 3 * 2) * 3;   #! Let 'x' definition
+exit(x);                    #! Exit code with 'x'

@@ -3,7 +3,7 @@ CC = g++
 SCR = ./scr
 BUILD = ./build
 
-SOURCE = $(SCR)/main.cpp
+SOURCE = $(SCR)/main.cpp $(SCR)/include/*.cpp
 COMPILER_PROGRAM = $(BUILD)/GCOMPILER
 
 FLAGS = -std=c++20 -fpermissive
@@ -12,7 +12,7 @@ ASM = $(BUILD)/out.asm
 OUT = $(BUILD)/out.o
 GFL_PROGRAM = $(BUILD)/PROGRAM
 
-ARGS = -i ./GFL/main.gfl -op ./build/ -dt true
+ARGS = -i ./GFL/explaination.gfl -op ./build/ -dt true
 
 all: clean compile clear run_compiler
 

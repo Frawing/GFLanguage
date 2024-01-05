@@ -36,7 +36,7 @@ struct Token
     std::optional<std::string> value;
 };
 
-inline const std::string ToString(TokenType type)
+const inline std::string ToString(TokenType type)
 {
     switch (type)
     {
@@ -98,7 +98,7 @@ inline const std::string ToString(TokenType type)
     }
 }
 
-std::optional<int> bin_prec(TokenType type)
+const inline std::optional<int> bin_prec(TokenType type)
 {
     switch (type)
     {

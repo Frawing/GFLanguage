@@ -87,17 +87,16 @@ struct NodeProg{
 
 class Parser
 {
-
     public:
 
         explicit inline Parser(const std::vector<Token> p_tokens) 
             : tokens(p_tokens), allocator(1024 * 1024 * 4) {}
 
-        inline std::optional<NodeTerm*>  parse_term();
-        inline std::optional<NodeExpr*>  parse_expr(int min_prec = 0);
-        inline std::optional<NodeScope*> parse_scope();
-        inline std::optional<NodeStmt*>  parse_stmt();
-        inline std::optional<NodeProg>   parse_program()
+        std::optional<NodeTerm*> parse_term();
+        std::optional<NodeExpr*> parse_expr(int min_prec = 0);
+        std::optional<NodeScope*> parse_scope();
+        std::optional<NodeStmt*> parse_stmt();
+        inline std::optional<NodeProg> parse_program()
         {
             NodeProg prog;
             while(peek().has_value())

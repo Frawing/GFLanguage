@@ -52,6 +52,37 @@ std::vector<Token> Tokenizer::tokenize()
             consume();
         }
 
+        else if(peek().value() == '#')
+        {
+            if(peek(1).has_value() && peek(1).value() == '!')
+            {
+                consume();
+                consume();
+                
+                while(peek().has_value() && peek().value() != '\n')
+                {
+                    consume();
+                }
+            }
+        }
+        else if(peek().value() == '&')
+        {
+            if(peek(1).has_value() && peek(1).value() == '*')
+            {
+                consume();
+                consume();
+                
+                while(peek().has_value() && peek().value() != '*' && 
+                      peek(1).has_value() && peek(1).value() != '&')
+                {
+                    consume();
+                }
+                
+                consume();
+                consume();
+            }
+        }
+
         else
         {
             switch (peek().value())
