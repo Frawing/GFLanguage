@@ -1,7 +1,7 @@
 CC = g++
 
-SCR = scr
-BUILD = build
+SCR = ./scr
+BUILD = ./build
 
 SOURCE = $(SCR)/main.cpp
 COMPILER_PROGRAM = $(BUILD)/GCOMPILER
@@ -14,6 +14,7 @@ GFL_PROGRAM = $(BUILD)/PROGRAM
 
 ARG1 = ./GFL/main.gfl
 ARG2 = ./build/
+ARG3 = true
 
 all: clean compile clear run_compiler
 
@@ -21,7 +22,7 @@ compile:
 	$(CC) $(FLAGS) $(SOURCE) -o $(COMPILER_PROGRAM) 
 
 run_compiler:
-	./$(COMPILER_PROGRAM) $(ARG1) $(ARG2)
+	./$(COMPILER_PROGRAM) $(ARG1) $(ARG2) $(ARG3)
 	nasm -felf64 $(ASM)
 	ld -o $(GFL_PROGRAM) $(OUT)
 

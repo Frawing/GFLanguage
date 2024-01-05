@@ -2,15 +2,23 @@ $$
 \begin{align}
 
     [Prog] &\to [Stmt]^*
+
+    \\
+
+    [Scope] &\to {[Stmt]^*}
     
     \\
     
     [Stmt] &\to
     \begin{cases}
 
-        exit([Expr]);
+        exit( [Expr] );
         \\
-        let ident = [Expr];
+        let \space ident = [Expr];
+        \\
+        [Scope]
+        \\
+        if ([Expr]) [Scope]
     
     \end{cases}
     
@@ -32,7 +40,11 @@ $$
 
         [Expr] * [Expr] &\text{prec} = 1
         \\
+        [Expr] \space / \space [Expr] &\text{prec} = 1
+        \\
         [Expr] + [Expr] &\text{prec} = 0
+        \\
+        [Expr] - [Expr] &\text{prec} = 0
     
     \end{cases}
     
@@ -44,6 +56,8 @@ $$
         Integer
         \\
         Identifier
+        \\
+        ( [Expr] )
 
     \end{cases}
 
