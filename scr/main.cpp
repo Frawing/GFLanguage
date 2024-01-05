@@ -1,22 +1,24 @@
 #include <fstream>
 #include <iostream>
 #include <cstring>
-#include "include/Arena.h"
 #include "include/Generator.h"
 
-int main(int argc, char* argv[]){
-
+int main(int argc, char* argv[])
+{
     std::string file_name = "";
     std::string out_file_path = "./";
     bool print_tokens = false;
-    for(int i = 1; i < argc; i++){
+
+    for(int i = 1; i < argc; i++)
+    {
         if(std::strcmp(argv[i], "-i") == 0){ // Input (file)
             file_name = argv[++i];
         }
         else if(std::strcmp(argv[i], "-op") == 0){ // Output Path
             out_file_path = argv[++i];
         }
-        else if(std::strcmp(argv[i], "-dt") == 0){ // Debug Token
+        else if(std::strcmp(argv[i], "-dt") == 0) // Debug Tokens
+        {
             i++;
             if (std::strcmp(argv[i], "true") == 0) {
                 print_tokens = true;
