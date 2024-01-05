@@ -12,9 +12,7 @@ ASM = $(BUILD)/out.asm
 OUT = $(BUILD)/out.o
 GFL_PROGRAM = $(BUILD)/PROGRAM
 
-ARG1 = ./GFL/main.gfl
-ARG2 = ./build/
-ARG3 = true
+ARGS = -i ./GFL/main.gfl -op ./build/ -dt true
 
 all: clean compile clear run_compiler
 
@@ -22,7 +20,7 @@ compile:
 	$(CC) $(FLAGS) $(SOURCE) -o $(COMPILER_PROGRAM) 
 
 run_compiler:
-	./$(COMPILER_PROGRAM) $(ARG1) $(ARG2) $(ARG3)
+	$(COMPILER_PROGRAM) $(ARGS)
 	nasm -felf64 $(ASM)
 	ld -o $(GFL_PROGRAM) $(OUT)
 

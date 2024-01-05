@@ -6,33 +6,36 @@
 
 int main(int argc, char* argv[]){
 
-    if(argc < 2){
-        std::cerr << "Specificare il file '.gfl'!" << std::endl;
-        exit(1);
-    }
-
+    std::string file_name = "";
     std::string out_file_path = "./";
-    if(argc >= 3){
-        out_file_path = argv[2];
-    }
-
     bool print_tokens = false;
-    if(argc == 4){
-        if (std::strcmp(argv[3], "true") == 0) {
-            print_tokens = true;
-        } else if (std::strcmp(argv[3], "false") == 0) {
-            print_tokens = false;
-        } else {
-            std::cerr << "The third param must be a boolean!" << std::endl;
+    for(int i = 1; i < argc; i++){
+        if(std::strcmp(argv[i], "-i") == 0){ // Input (file)
+            file_name = argv[++i];
+        }
+        else if(std::strcmp(argv[i], "-op") == 0){ // Output Path
+            out_file_path = argv[++i];
+        }
+        else if(std::strcmp(argv[i], "-dt") == 0){ // Debug Token
+            i++;
+            if (std::strcmp(argv[i], "true") == 0) {
+                print_tokens = true;
+            } else if (std::strcmp(argv[i], "false") == 0) {
+                print_tokens = false;
+            } else {
+                std::cerr << "The Debug_Token parameter must be a boolean!" << std::endl;
+                exit(1);
+            }
+        }
+        else{
+            std::cerr << "This parameter is invalid : " << argv[i] << "!" << std::endl;
             exit(1);
         }
     }
 
-    std::string file_name = argv[1];
-
     std::fstream file(file_name, std::ios::in);
     if (!file.is_open() || file.fail()) {
-        std::cerr << "Errore nell'apertura del file." << std::endl;
+        std::cerr << "Errore nell'apertura del file!" << std::endl;
         return 1;
     }
 
