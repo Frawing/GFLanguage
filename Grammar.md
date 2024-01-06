@@ -16,12 +16,27 @@ $$
         \\
         let \space ident = [Expr];
         \\
+        ident = [Expr];
+        \\
         [Scope]
         \\
-        if ([Expr]) [Scope]
+        if ([Expr]) [Scope] [IfPred]^*
     
     \end{cases}
     
+    \\
+
+    [IfPred] &\to
+    \begin{cases}
+    
+        elif ([Expr]) [Scope] [IfPred]
+        \\
+        else [Scope]
+        \\
+        \epsilon
+
+    \end{cases}
+
     \\
     
     [Expr] &\to

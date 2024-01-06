@@ -125,51 +125,102 @@ void Generator::gen_scope(const NodeScope* scope)
     end_scope();
 }
 
+// ----------------------------------------
+
+void Generator::gen_if_pred(const NodeIfPred* pred, const std::string end_label)
+{
+    struct PredVisitor{
+        Generator& gen;
+        const std::string end_label = end_label;
+
+        const void operator()(const NodeIfPredElif* pred_elif){
+            gen.gen_expr(pred_elif->cond);
+            gen.pop("rax");
+            std::string label = gen.create_label();
+            gen.output << "    test rax, rax\n";
+            gen.output << "    jz " << label << "\n";
+            gen.gen_scope(pred_elif->scope);
+            gen.output << "    jmp " << end_label << "\n";
+            if(pred_elif->pred.has_value()){
+                gen.output << label << ":\n";
+                gen.gen_if_pred(pred_elif->pred.value(), end_label);
+            }
+        }
+        const void operator()(const NodeIfPredElse* pred_else){
+            gen.gen_scope(pred_else->scope);
+        }
+    };
+
+    PredVisitor visitor{.gen = *this, .end_label = end_label };
+    std::visit(visitor, pred->value);
+}
+
+// ----------------------------------------
+
 void Generator::gen_stmt(const NodeStmt* stmt)
 {
     struct StmtVisitor
     {
-        Generator* gen;
-        inline StmtVisitor(Generator* p_gen) : gen(p_gen) {}
+        Generator& gen;
 
         const void operator()(const NodeStmtExit* stmt)
         {
-            gen->gen_expr(stmt->expr);
-            gen->output << "    mov rax, 60" << "\n";
-            gen->output << "    pop rdi" << "\n";
-            gen->output << "    syscall" << "\n";
+            gen.gen_expr(stmt->expr);
+            gen.output << "    mov rax, 60" << "\n";
+            gen.output << "    pop rdi" << "\n";
+            gen.output << "    syscall" << "\n";
         }
 
         const void operator()(const NodeStmtLet* stmt)
         {
-            auto it = std::find_if(gen->variables.cbegin(), gen->variables.cend(),
+            auto it = std::find_if(gen.variables.cbegin(), gen.variables.cend(),
                         [&](const Var& var) { return var.name == stmt->ident.value.value(); });
             
-            if(it != gen->variables.cend())
+            if(it != gen.variables.cend())
             {
                 std::cerr << "La variabile '" << stmt->ident.value.value() << "' è già stata dichiarata!" << std::endl;
                 exit(1);
             }
-            gen->variables.push_back({stmt->ident.value.value(), gen->stack_size});
-            gen->gen_expr(stmt->expr);
+            gen.variables.push_back({stmt->ident.value.value(), gen.stack_size});
+            gen.gen_expr(stmt->expr);
+        }
+        const void operator()(const NodeStmtAssign* stmt)
+        {
+            auto it = std::find_if(gen.variables.cbegin(), gen.variables.cend(),
+                        [&](const Var& var) { return var.name == stmt->ident.value.value(); });
+            
+            if(it == gen.variables.cend())
+            {
+                std::cerr << "Undeclared variable : '" << stmt->ident.value.value() << "'!" << std::endl;
+                exit(1);
+            }
+            gen.gen_expr(stmt->expr);
+            gen.pop("rax");
+            gen.output << "    mov [rsp + " << (gen.stack_size - it->stack_pos - 1) * 8 << "], rax\n";
         }
 
         const void operator()(const NodeScope* scope) {
-            gen->gen_scope(scope);
+            gen.gen_scope(scope);
         }
 
         const void operator()(const NodeStmtIf* if_stmt)
         {
-            gen->gen_expr(if_stmt->cond);
-            gen->pop("rax");
-            std::string label = gen->create_label();
-            gen->output << "    test rax, rax\n";
-            gen->output << "    jz " << label << "\n";
-            gen->gen_scope(if_stmt->scope);
-            gen->output << label << ":\n";
+            gen.gen_expr(if_stmt->cond);
+            gen.pop("rax");
+            std::string label = gen.create_label();
+            gen.output << "    test rax, rax\n";
+            gen.output << "    jz " << label << "\n";
+            gen.gen_scope(if_stmt->scope);
+            std::string end_label = gen.create_label();
+            gen.output << "    jmp " << end_label << "\n";
+            gen.output << label << ":\n";
+            if(if_stmt->pred.has_value()){
+                gen.gen_if_pred(if_stmt->pred.value(), end_label);
+                gen.output <<  end_label << ":\n";
+            }
         }
     };
 
-    StmtVisitor visitor(this);
+    StmtVisitor visitor{ .gen = *this };
     std::visit(visitor, stmt->stmt);
 }

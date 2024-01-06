@@ -4,46 +4,35 @@ std::optional<NodeTerm*> Parser::parse_term()
 {
     if(peek().has_value() && peek().value().type == TokenType::INTEGER)
     {
-        auto node_term = allocator.alloc<NodeTerm>();
-        auto node_term_int = allocator.alloc<NodeTermInt>();
-        node_term_int->integer = consume();
-        node_term->value = node_term_int;
+        auto node_term_int = allocator.emplace<NodeTermInt>(consume());
+        auto node_term = allocator.emplace<NodeTerm>(node_term_int);
         return node_term;
     }
 
     else if(peek().has_value() && peek().value().type == TokenType::IDENT)
     {
-        auto node_term = allocator.alloc<NodeTerm>();
-        auto node_term_ident = allocator.alloc<NodeTermIdent>();
-        node_term_ident->indent = consume();
-        node_term->value = node_term_ident;
+        auto node_term_ident = allocator.emplace<NodeTermIdent>(consume());
+        auto node_term = allocator.emplace<NodeTerm>(node_term_ident);
         return node_term;
     }
 
-    else if(try_consume(TokenType::OPEN_PAREN))
+    else if(auto token_open_paren = try_consume(TokenType::OPEN_PAREN))
     {
-        if(auto expr = parse_expr())
+        if(auto node_expr = parse_expr())
         {
-            if(try_consume(TokenType::CLOSE_PAREN))
+            if(try_consume(TokenType::CLOSE_PAREN, ")", token_open_paren.value().line))
             {
-                auto node_term_paren = allocator.alloc<NodeTermParen>();
-                node_term_paren->expr = expr.value();
-                auto node_term = allocator.alloc<NodeTerm>();
-                node_term->value = node_term_paren;
+                auto node_term_paren = allocator.emplace<NodeTermParen>(node_expr.value());
+                auto node_term = allocator.emplace<NodeTerm>(node_term_paren);
                 return node_term;
-            }else{
-                std::cerr << "Expected ')'" << std::endl;
-                exit(1);
             }
+
         }else{
-            std::cout << "Expected expression!" << std::endl;
-            exit(1);
+            error_expected("expression", token_open_paren.value().line);
         }
     }
 
-    else{
-        return {};
-    }
+    return {};
 }
 
 // ----------------------------------------
@@ -54,14 +43,15 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec = 0)
     if(!term_lhs.has_value()){
         return {};
     }
-    auto expr_lhs = allocator.alloc<NodeExpr>();
-    expr_lhs->value = term_lhs.value();
+    
+    auto expr_lhs = allocator.emplace<NodeExpr>(term_lhs.value());
 
     while(true)
     {
         std::optional<Token> curr_tok = peek();
         std::optional<int> prec;
-        if(curr_tok.has_value()){
+        if(curr_tok.has_value())
+        {
             prec = bin_prec(curr_tok.value().type);
             if(!prec.has_value() || prec < min_prec){
                 break;
@@ -74,7 +64,7 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec = 0)
         int next_min_prec = prec.value() + 1;
         auto expr_rhs = parse_expr(next_min_prec);
         if(!expr_rhs.has_value()){
-            std::cerr << "Unable to parse expression" << std::endl;
+            std::cerr << "Unable to parse expression!" << std::endl;
             exit(1);
         }
 
@@ -112,8 +102,10 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec = 0)
             bin_expr_div->rhs = expr_rhs.value();
             bin_expr->value = bin_expr_div;
         }
+
         expr_lhs->value = bin_expr;
     }
+
     return expr_lhs;
 }
 
@@ -122,136 +114,169 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec = 0)
 std::optional<NodeScope*> Parser::parse_scope()
 {
     auto scope = allocator.alloc<NodeScope>();
-    
-    if(!try_consume(TokenType::OPEN_CURLY)){
-        return {};
-    }
 
-    while (auto stmt = parse_stmt())
+    if(auto token_open_curly = try_consume(TokenType::OPEN_CURLY))
     {
-        scope->stmts.push_back(stmt.value());
+        while (auto node_stmt = parse_stmt())
+        {
+            scope->stmts.push_back(node_stmt.value());
+        }
+
+        try_consume(TokenType::CLOSE_CURLY, "}", token_open_curly.value().line);
+
+        return scope;
     }
 
-    if(!try_consume(TokenType::CLOSE_CURLY)){
-        std::cerr << "Expected '}" << std::endl;
-        exit(1);
+    return {};
+}
+
+// ----------------------------------------
+
+std::optional<NodeIfPred*> Parser::parse_if_pred()
+{
+    if(auto token_ifpred_elif = try_consume(TokenType::ELIF))
+    {
+        try_consume(TokenType::OPEN_PAREN, "(", token_ifpred_elif.value().line);
+
+        auto node_ifpred_elif = allocator.alloc<NodeIfPredElif>();
+        if(auto expr = parse_expr()){
+            node_ifpred_elif->cond = expr.value();
+        }else{
+            error_expected("expression", token_ifpred_elif.value().line);
+        }
+
+        try_consume(TokenType::CLOSE_PAREN, ")", token_ifpred_elif.value().line);
+
+        if(auto scope = parse_scope()){
+            node_ifpred_elif->scope = scope.value();
+        }else{
+            error_invalid("scope", token_ifpred_elif.value().line);
+        }
+
+        node_ifpred_elif->pred = parse_if_pred();
+        auto node_ifpred = allocator.emplace<NodeIfPred>(node_ifpred_elif);
+        return node_ifpred;
+    }
+    else if(auto token_ifpred_else = try_consume(TokenType::ELSE))
+    {
+        if(auto node_scope = parse_scope()){
+            auto node_ifpred_else = allocator.emplace<NodeIfPredElse>(node_scope.value());
+            auto node_ifpred = allocator.emplace<NodeIfPred>(node_ifpred_else);
+            return node_ifpred;
+
+        }else{
+            error_invalid("scope", token_ifpred_else.value().line);
+        }
     }
 
-    return scope;
+    return {};
 }
 
 // ----------------------------------------
 
 std::optional<NodeStmt*> Parser::parse_stmt()
 {
-    auto stmt = allocator.alloc<NodeStmt>();
-
-    if(try_consume(TokenType::EXIT))
+    if(auto token_stmt_exit = try_consume(TokenType::EXIT))
     {
-
-        if(!try_consume(TokenType::OPEN_PAREN)){
-            std::cerr << "Expected '('" << std::endl;
-            exit(1);
-        }
+        try_consume(TokenType::OPEN_PAREN, "(", token_stmt_exit.value().line);
 
         if(auto node_expr = parse_expr())
         {
-            auto stmt_exit = allocator.alloc<NodeStmtExit>();
-            stmt_exit->expr = node_expr.value();
-            stmt->stmt = stmt_exit;
+            auto node_stmt_exit = allocator.emplace<NodeStmtExit>(node_expr.value());
+
+            try_consume(TokenType::CLOSE_PAREN, ")", token_stmt_exit.value().line);
+            try_consume(TokenType::SEMI, ";", token_stmt_exit.value().line);
+
+            auto node_stmt = allocator.emplace<NodeStmt>(node_stmt_exit);
+            return node_stmt;
         }
         else{
-            std::cerr << "Unexpected value!" << std::endl;
-            exit(1);
+            error_invalid("expression", token_stmt_exit.value().line);
         }
-
-
-        if(!try_consume(TokenType::CLOSE_PAREN)){
-            std::cerr << "Expected ')'" << std::endl;
-            exit(1);
-        }
-
-        if(!try_consume(TokenType::SEMI)){
-            std::cerr << "Expected ';'" << std::endl;
-            exit(1);
-        }
-
-        return stmt;
     }
 
-    else if(try_consume(TokenType::LET))
+    else if(auto token_stmt_let = try_consume(TokenType::LET))
     {
-
         if(peek().has_value() && peek().value().type == TokenType::IDENT)
         {
             if(peek(1).has_value() && peek(1).value().type == TokenType::EQUAL)
             {
-                auto stmt_let = allocator.alloc<NodeStmtLet>();
-                stmt_let->ident = consume();
+                auto node_stmt_let = allocator.alloc<NodeStmtLet>();
+                node_stmt_let->ident = consume();
                 consume();
 
                 if(auto node_expr = parse_expr()){
-                    stmt_let->expr = node_expr.value();
-                    stmt->stmt = stmt_let;
-                }else{
-                    std::cerr << "Invalid expression!" << std::endl;
-                    exit(1);
+                    node_stmt_let->expr = node_expr.value();
+
+                    try_consume(TokenType::SEMI, ";", token_stmt_let.value().line);
+
+                    auto stmt = allocator.emplace<NodeStmt>(node_stmt_let);
+                    return stmt;
                 }
+                else{
+                    error_invalid("expression", token_stmt_let.value().line);
+                }                
             }
         }
 
-        if(!try_consume(TokenType::SEMI)){
-            std::cerr << "Expected ';'" << std::endl;
-            exit(1);
-        }
+        return {};
+    }
+    else if(peek().has_value() && peek().value().type == TokenType::IDENT)
+    {
+        if(peek(1).has_value() && peek(1).value().type == TokenType::EQUAL)
+        {
+            auto node_stmt_assign = allocator.alloc<NodeStmtAssign>();
+            node_stmt_assign->ident = consume();
+            consume();
 
-        return stmt;
+            if(auto node_expr = parse_expr()){
+                node_stmt_assign->expr = node_expr.value();
+
+                try_consume(TokenType::SEMI, ";", node_stmt_assign->ident.line);
+
+                auto node_stmt = allocator.emplace<NodeStmt>(node_stmt_assign);
+                return node_stmt;
+            }
+            else{
+                std::cerr << "Invalid expression!" << std::endl;
+                exit(1);
+            }
+        }
     }
 
-    else if(try_consume(TokenType::IF))
+    else if(auto token_stmt_if = try_consume(TokenType::IF))
     {
-        if(!try_consume(TokenType::OPEN_PAREN)){
-            std::cerr << "Expected '('" << std::endl;
-            exit(1);
-        }
+        try_consume(TokenType::OPEN_PAREN, "(", token_stmt_if.value().line);
 
-        auto stmt = allocator.alloc<NodeStmt>();
-        auto if_stmt = allocator.alloc<NodeStmtIf>();
+        auto node_stmt_if = allocator.alloc<NodeStmtIf>();
         if(auto expr = parse_expr()){
-            if_stmt->cond = expr.value();
+            node_stmt_if->cond = expr.value();
         }else{
-            std::cerr << "Expected expression!" << std::endl;
-            exit(1);
+            error_expected("expression", token_stmt_if.value().line);
         }
 
-        if(!try_consume(TokenType::CLOSE_PAREN)){
-            std::cerr << "Expected ')'" << std::endl;
-            exit(1);
-        }
+        try_consume(TokenType::CLOSE_PAREN, ")", token_stmt_if.value().line);
 
         if(auto scope = parse_scope()){
-            if_stmt->scope = scope.value();
-        }else{
-            std::cerr << "Invalid scope!" << std::endl;
-            exit(1);
-        }
+            node_stmt_if->scope = scope.value();
+            node_stmt_if->pred = parse_if_pred();
 
-        stmt->stmt = if_stmt;
-        return stmt;
+            auto node_stmt = allocator.emplace<NodeStmt>(node_stmt_if);
+            return node_stmt;
+        }else{
+            error_invalid("scope", token_stmt_if.value().line);
+        }
     }
 
     else if(peek().has_value() && peek().value().type == TokenType::OPEN_CURLY)
     {
-        auto stmt = allocator.alloc<NodeStmt>();
-        
         if(auto scope = parse_scope()){
-            stmt->stmt = scope.value();
+            auto node_stmt = allocator.emplace<NodeStmt>(scope.value());
+            return node_stmt;
+        }else{
+            error_invalid("scope");
         }
-
-        return stmt;
     }
     
-    else{
-        return {};
-    }
+    return {};
 }

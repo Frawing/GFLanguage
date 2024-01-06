@@ -11,6 +11,8 @@ enum TokenType
     IDENT,
 
     IF,
+    ELIF,
+    ELSE,
 
     EXIT,
 
@@ -33,7 +35,16 @@ enum TokenType
 struct Token
 {
     TokenType type;
+    int line;
     std::optional<std::string> value;
+
+    bool operator==(const Token &other){
+        if(type == other.type && value == other.value){
+            return true;
+        }else{
+            return false;
+        }
+    }
 };
 
 const inline std::string ToString(TokenType type)
@@ -49,6 +60,12 @@ const inline std::string ToString(TokenType type)
 
         case TokenType::IF:
             return "IF";
+            break;
+        case TokenType::ELIF:
+            return "ELIF";
+            break;
+        case TokenType::ELSE:
+            return "ELSE";
             break;
 
         case TokenType::EXIT:
@@ -113,6 +130,24 @@ const inline std::optional<int> bin_prec(TokenType type)
         default:
             return {};
     }
+}
+
+template<typename T>
+bool compareVectors(std::vector<T> vecA, std::vector<T> vecB)
+{
+    if(vecA.size() != vecB.size())
+    {
+        return false;
+    }
+
+    for(size_t i = 0; i < vecA.size(); i++)
+    {
+        if(vecA[i] != vecB[i]){
+            return false;
+        }
+    }
+  
+    return true;
 }
 
 class Tokenizer

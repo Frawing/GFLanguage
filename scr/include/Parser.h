@@ -1,11 +1,13 @@
 #pragma once
 
 #include <variant>
+#include "Error.h"
 #include "Arena.h"
 #include "Token.h"
 
 struct NodeExpr;
 struct NodeStmt;
+struct NodeIfPred;
 
 struct NodeTermInt{
     Token integer;
@@ -19,7 +21,8 @@ struct NodeTermParen{
     NodeExpr* expr;
 };
 
-struct NodeTerm{
+struct NodeTerm
+{
     std::variant<NodeTermInt*,
                  NodeTermIdent*,
                  NodeTermParen*> value;
@@ -68,17 +71,38 @@ struct NodeStmtLet{
     NodeExpr* expr;
 };
 
+struct NodeStmtAssign{
+    Token ident;
+    NodeExpr* expr;
+};
+
+struct NodeIfPredElif{
+    NodeExpr* cond;
+    NodeScope* scope;
+    std::optional<NodeIfPred*> pred;
+};
+
+struct NodeIfPredElse{
+    NodeScope* scope;
+};
+
+struct NodeIfPred{
+    std::variant<NodeIfPredElif*, NodeIfPredElse*> value;
+};
+
 struct NodeStmtIf
 {
     NodeExpr* cond;
     NodeScope* scope;
+    std::optional<NodeIfPred*> pred;
 };
 
 
-struct NodeStmt{
-    std::variant<NodeStmtLet*,
-                 NodeStmtExit*,
-                 NodeStmtIf*, NodeScope*> stmt;
+struct NodeStmt
+{
+    std::variant<NodeStmtLet*, NodeStmtAssign*,
+                 NodeStmtIf*, NodeScope*,
+                 NodeStmtExit*> stmt;
 };
 
 struct NodeProg{
@@ -95,6 +119,7 @@ class Parser
         std::optional<NodeTerm*> parse_term();
         std::optional<NodeExpr*> parse_expr(int min_prec = 0);
         std::optional<NodeScope*> parse_scope();
+        std::optional<NodeIfPred*> parse_if_pred();
         std::optional<NodeStmt*> parse_stmt();
         inline std::optional<NodeProg> parse_program()
         {
@@ -104,8 +129,7 @@ class Parser
                 if(auto stmt = parse_stmt()){
                     prog.stmts.push_back(stmt.value());
                 }else{
-                    std::cerr << "Invalid Statment" << std::endl;
-                    exit(1);
+                    error_invalid("statment");
                 }
             }
             return prog;
@@ -121,15 +145,25 @@ class Parser
                 return tokens.at(index + offset);
             }
         }
-        const inline Token consume(){
+        inline Token consume(){
             return tokens.at(index++);
         }
 
-        const inline std::optional<Token> try_consume(const TokenType type)
+        inline std::optional<Token> try_consume(const TokenType type)
         {
             if (peek().has_value() && peek().value().type == type){
                 return consume();
             }
+            return {};
+        }
+
+        inline std::optional<Token> try_consume(const TokenType type, const std::string msg, const int line = 0)
+        {
+            if (peek().has_value() && peek().value().type == type){
+                return consume();
+            }
+
+            error_expected(msg, line);
             return {};
         }
 

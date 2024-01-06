@@ -4,7 +4,8 @@ std::vector<Token> Tokenizer::tokenize()
 {
     std::vector<Token> tokens;
     std::string buf;
-    
+    int line_cout = 0;
+
     while(peek().has_value())
     {
         if(std::isalpha(peek().value()))
@@ -16,22 +17,30 @@ std::vector<Token> Tokenizer::tokenize()
             }
 
             if(buf == "let"){
-                tokens.push_back({.type = TokenType::LET});
+                tokens.push_back({ TokenType::LET, line_cout });
                 buf.clear();
             }
             
             else if(buf == "if"){
-                tokens.push_back({.type = TokenType::IF});
+                tokens.push_back({ TokenType::IF, line_cout });
+                buf.clear();
+            }
+            else if(buf == "elif"){
+                tokens.push_back({ TokenType::ELIF, line_cout });
+                buf.clear();
+            }
+            else if(buf == "else"){
+                tokens.push_back({ TokenType::ELSE, line_cout });
                 buf.clear();
             }
 
             else if(buf == "exit"){
-                tokens.push_back({.type = TokenType::EXIT});
+                tokens.push_back({ TokenType::EXIT, line_cout });
                 buf.clear();
             }
 
             else{
-                tokens.push_back({.type = TokenType::IDENT, .value = buf});
+                tokens.push_back({ TokenType::IDENT, line_cout, buf});
                 buf.clear();
             }
         }
@@ -45,9 +54,10 @@ std::vector<Token> Tokenizer::tokenize()
                 buf.push_back(consume());
             }
             
-            tokens.push_back({.type = TokenType::INTEGER, .value = buf});
+            tokens.push_back({ TokenType::INTEGER, line_cout, buf});
             buf.clear();
         }
+
         else if(std::isspace(peek().value())){
             consume();
         }
@@ -72,14 +82,19 @@ std::vector<Token> Tokenizer::tokenize()
                 consume();
                 consume();
                 
-                while(peek().has_value() && peek().value() != '*' && 
-                      peek(1).has_value() && peek(1).value() != '&')
+                while(peek().has_value())
                 {
+                    if(peek().value() == '*' && peek(1).has_value() && peek(1).value() == '&'){
+                        break;
+                    }
                     consume();
                 }
-                
-                consume();
-                consume();
+                if(peek().has_value()){
+                    consume();
+                }
+                if(peek().has_value()){
+                    consume();
+                }
             }
         }
 
@@ -89,61 +104,61 @@ std::vector<Token> Tokenizer::tokenize()
             {
                 case '(':
                     consume();
-                    tokens.push_back({.type = TokenType::OPEN_PAREN});
+                    tokens.push_back({ TokenType::OPEN_PAREN, line_cout });
                     buf.clear();
                     break;
 
                 case ')':
                     consume();
-                    tokens.push_back({.type = TokenType::CLOSE_PAREN});
+                    tokens.push_back({ TokenType::CLOSE_PAREN, line_cout });
                     buf.clear();
                     break;
                 
                 case '{':
                     consume();
-                    tokens.push_back({.type = TokenType::OPEN_CURLY});
+                    tokens.push_back({ TokenType::OPEN_CURLY, line_cout });
                     buf.clear();
                     break;
 
                 case '}':
                     consume();
-                    tokens.push_back({.type = TokenType::CLOSE_CURLY});
+                    tokens.push_back({ TokenType::CLOSE_CURLY, line_cout });
                     buf.clear();
                     break;
 
                 case '+':
                     consume();
-                    tokens.push_back({.type = TokenType::PLUS});
+                    tokens.push_back({ TokenType::PLUS, line_cout });
                     buf.clear();
                     break;
 
                 case '*':
                     consume();
-                    tokens.push_back({.type = TokenType::STAR});
+                    tokens.push_back({ TokenType::STAR, line_cout });
                     buf.clear();
                     break;
 
                 case '-':
                     consume();
-                    tokens.push_back({.type = TokenType::MINUS});
+                    tokens.push_back({ TokenType::MINUS, line_cout });
                     buf.clear();
                     break;
 
                 case '/':
                     consume();
-                    tokens.push_back({.type = TokenType::SLASH});
+                    tokens.push_back({ TokenType::SLASH, line_cout });
                     buf.clear();
                     break;
 
                 case '=':
                     consume();
-                    tokens.push_back({.type = TokenType::EQUAL});
+                    tokens.push_back({ TokenType::EQUAL, line_cout });
                     buf.clear();
                     break;
 
                 case ';':
                     consume();
-                    tokens.push_back({.type = TokenType::SEMI});
+                    tokens.push_back({ TokenType::SEMI, line_cout });
                     buf.clear();
                     break;
 

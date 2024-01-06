@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <cassert>
+#include <algorithm>
 #include "Parser.h"
 
 class Generator{
@@ -14,6 +15,7 @@ class Generator{
         void gen_bin_expr(const NodeBinExpr* bin_expr);
         void gen_expr(const NodeExpr* expr);
         void gen_scope(const NodeScope* scope);
+        void gen_if_pred(const NodeIfPred* pred, const std::string end_label);
         void gen_stmt(const NodeStmt* stmt);
         const inline std::string gen_prog()
         {
