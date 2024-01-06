@@ -4,7 +4,7 @@ std::vector<Token> Tokenizer::tokenize()
 {
     std::vector<Token> tokens;
     std::string buf;
-    int line_cout = 0;
+    int line_cout = 1;
 
     while(peek().has_value())
     {
