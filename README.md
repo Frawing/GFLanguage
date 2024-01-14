@@ -26,6 +26,6 @@ Oltre al parametro illustrato precedentemente ce ne sono altri 2:
 
 | Args | Descrizione | Facoltativo |
 | --- | --- | --- |
-| `-i` | Nome del file da compilare (con estenzione) | $$No$$ |
-| `-op` | Percorso del file out.asm creato dal compiler | $$Si$$ |
-| `-dt` | Print Tokens | $$Si$$ |
+| `-i` | Nome del file da compilare (con estenzione) | $$\text{No}$$ |
+| `-op` | Percorso del file out.asm creato dal compiler | $$\text{Si}$$ |
+| `-dt` | Print Tokens | $$\text{Si}$$ |
