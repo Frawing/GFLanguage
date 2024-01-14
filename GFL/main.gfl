@@ -1,11 +1,11 @@
-let x = 10
+let x = 1;
 
-if( 0 ){
-    x = 1;
-} elif ( 0 ){
-    x = 2;
-} else {
-    x = 3;
+if(x > 2){
+    println("X è maggiore di 2");
+}elif(x == 2){
+    println("X è uguale a 2");
+}else{
+    println("X è minore di 2");
 }
 
-exit(x);
+exit(0);

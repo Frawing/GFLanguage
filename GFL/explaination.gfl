@@ -9,4 +9,7 @@
 &* exit(1); *&   #! And also this
 
 let x = (10 - 3 * 2) * 3;   #! Let 'x' definition
+x = 0;                      #! 'x' assegnation
+#! let x = 1;               #! This is redefinition and is an error
+
 exit(x);                    #! Exit code with 'x'

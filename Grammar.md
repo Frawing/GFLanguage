@@ -12,7 +12,11 @@ $$
     [Stmt] &\to
     \begin{cases}
 
-        exit( [Expr] );
+        exit( [IntExpr] );
+        \\
+        println( [TextExpr] )
+        \\
+        print( [TextExpr] );
         \\
         let \space ident = [Expr];
         \\
@@ -20,7 +24,7 @@ $$
         \\
         [Scope]
         \\
-        if ([Expr]) [Scope] [IfPred]^*
+        if ( [IntExpr] [CompSimb] [IntExpr] ) [Scope] [IfPred]^*
     
     \end{cases}
     
@@ -29,7 +33,7 @@ $$
     [IfPred] &\to
     \begin{cases}
     
-        elif ([Expr]) [Scope] [IfPred]
+        elif ( [IntExpr] [CombSimb] [IntExpr] ) [Scope] [IfPred]
         \\
         else [Scope]
         \\
@@ -42,9 +46,31 @@ $$
     [Expr] &\to
     \begin{cases}
 
+        [IntExpr]
+        \\
+        [TextExpr]
+
+    \end{cases}
+
+    \\
+    
+    [IntExpr] &\to
+    \begin{cases}
+
         [BinExpr]
         \\
         [Term]
+
+    \end{cases}
+
+    \\
+    
+    [TextExpr] &\to
+    \begin{cases}
+
+        String
+        \\
+        Ident
 
     \end{cases}
     
@@ -53,13 +79,13 @@ $$
     [BinExpr] &\to
     \begin{cases}
 
-        [Expr] * [Expr] &\text{prec} = 1
+        [IntExpr] * [IntExpr] &\text{prec} = 1
         \\
-        [Expr] \space / \space [Expr] &\text{prec} = 1
+        [IntExpr] \space / \space [Expr] &\text{prec} = 1
         \\
-        [Expr] + [Expr] &\text{prec} = 0
+        [IntExpr] + [IntExpr] &\text{prec} = 0
         \\
-        [Expr] - [Expr] &\text{prec} = 0
+        [IntExpr] - [IntExpr] &\text{prec} = 0
     
     \end{cases}
     
@@ -72,7 +98,7 @@ $$
         \\
         Identifier
         \\
-        ( [Expr] )
+        ( [IntExpr] )
 
     \end{cases}
 

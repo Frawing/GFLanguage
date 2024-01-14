@@ -6,19 +6,22 @@
 #include "Token.h"
 
 struct NodeExpr;
+struct NodeIntExpr;
 struct NodeStmt;
 struct NodeIfPred;
 
+/* Term */
+
 struct NodeTermInt{
-    Token integer;
+    Token token_integer;
 };
 
 struct NodeTermIdent{
-    Token indent;
+    Token token_ident;
 };
 
 struct NodeTermParen{
-    NodeExpr* expr;
+    NodeIntExpr* int_expr;
 };
 
 struct NodeTerm
@@ -28,24 +31,44 @@ struct NodeTerm
                  NodeTermParen*> value;
 };
 
+/* Compare Simbols */
+
+struct NodeCompSimb{
+    Token token_simb;
+};
+
+/* Text */
+
+struct NodeTextString{
+    Token token_string;
+};
+
+struct NodeTextIdent
+{
+    Token token_ident;
+};
+
+
+/* Bin Expr */
+
 struct NodeBinExprMul{
-    NodeExpr* lhs;
-    NodeExpr* rhs;
+    NodeIntExpr* lhs;
+    NodeIntExpr* rhs;
 };
 
 struct NodeBinExprDiv{
-    NodeExpr* lhs;
-    NodeExpr* rhs;
+    NodeIntExpr* lhs;
+    NodeIntExpr* rhs;
 };
 
 struct NodeBinExprAdd{
-    NodeExpr* lhs;
-    NodeExpr* rhs;
+    NodeIntExpr* lhs;
+    NodeIntExpr* rhs;
 };
 
 struct NodeBinExprSub{
-    NodeExpr* lhs;
-    NodeExpr* rhs;
+    NodeIntExpr* lhs;
+    NodeIntExpr* rhs;
 };
 
 struct NodeBinExpr{
@@ -53,31 +76,54 @@ struct NodeBinExpr{
                  NodeBinExprAdd*, NodeBinExprSub*> value;
 };
 
-struct NodeExpr{
+/* Expr */
+
+struct NodeIntExpr{
     std::variant<NodeTerm*,
                  NodeBinExpr*> value;
 };
+
+struct NodeTextExpr{
+    std::variant<NodeTextString*,
+                 NodeTextIdent*> value;
+};
+
+struct NodeExpr{
+    std::variant<NodeTextExpr*, NodeIntExpr*> value;
+};
+
+/* Stmt */
+
+struct NodeStmtExit{
+    NodeIntExpr* int_expr;
+};
+
+struct NodeStmtPrint
+{
+    NodeTextExpr* text_expr;
+    bool new_line = false;
+};
+
+struct NodeStmtLet{
+    Token token_ident;
+    NodeExpr* expr;
+};
+
+struct NodeStmtAssign{
+    Token token_ident;
+    NodeExpr* expr;
+};
+
+/* Conditions */
 
 struct NodeScope{
     std::vector<NodeStmt*> stmts;
 };
 
-struct NodeStmtExit{
-    NodeExpr* expr;
-};
-
-struct NodeStmtLet{
-    Token ident;
-    NodeExpr* expr;
-};
-
-struct NodeStmtAssign{
-    Token ident;
-    NodeExpr* expr;
-};
-
 struct NodeIfPredElif{
-    NodeExpr* cond;
+    NodeIntExpr* int_expr_1;
+    NodeCompSimb* comp_simb;
+    NodeIntExpr* int_expr_2;
     NodeScope* scope;
     std::optional<NodeIfPred*> pred;
 };
@@ -92,22 +138,28 @@ struct NodeIfPred{
 
 struct NodeStmtIf
 {
-    NodeExpr* cond;
+    NodeIntExpr* int_expr_1;
+    NodeCompSimb* comp_simb;
+    NodeIntExpr* int_expr_2;
     NodeScope* scope;
     std::optional<NodeIfPred*> pred;
 };
 
+/* Other */
 
 struct NodeStmt
 {
     std::variant<NodeStmtLet*, NodeStmtAssign*,
                  NodeStmtIf*, NodeScope*,
-                 NodeStmtExit*> stmt;
+                 NodeStmtExit*, NodeStmtPrint*> value;
 };
 
 struct NodeProg{
     std::vector<NodeStmt*> stmts;
 };
+
+
+/* Parser Class */
 
 class Parser
 {
@@ -117,7 +169,9 @@ class Parser
             : tokens(p_tokens), allocator(1024 * 1024 * 4) {}
 
         std::optional<NodeTerm*> parse_term();
-        std::optional<NodeExpr*> parse_expr(int min_prec = 0);
+        std::optional<NodeExpr*> parse_expr();
+        std::optional<NodeTextExpr*> parse_text_expr();
+        std::optional<NodeIntExpr*> parse_int_expr(int min_prec = 0);
         std::optional<NodeScope*> parse_scope();
         std::optional<NodeIfPred*> parse_if_pred();
         std::optional<NodeStmt*> parse_stmt();

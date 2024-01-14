@@ -15,6 +15,8 @@ enum TokenType
     ELSE,
 
     EXIT,
+    PRINT,
+    PRINTLN,
 
     OPEN_PAREN,
     CLOSE_PAREN,
@@ -26,10 +28,15 @@ enum TokenType
     STAR,
     SLASH,
 
+    MAJOR,
+    MINOR,
     EQUAL,
+    DBL_EQUAL,
+    NOT_EQUAL,
     SEMI,
 
-    INTEGER
+    INTEGER,
+    STRING
 };
 
 struct Token
@@ -71,6 +78,12 @@ const inline std::string ToString(TokenType type)
         case TokenType::EXIT:
             return "EXIT";
             break;
+        case TokenType::PRINT:
+            return "PRINT";
+            break;
+        case TokenType::PRINTLN:
+            return "PRINTLN";
+            break;
         
         case TokenType::OPEN_PAREN:
             return "OPEN PAREN";
@@ -98,8 +111,21 @@ const inline std::string ToString(TokenType type)
             return "SLASH";
             break;
         
+
+        case TokenType::MAJOR:
+            return "MAJOR";
+            break;
+        case TokenType::MINOR:
+            return "MINOR";
+            break;
         case TokenType::EQUAL:
             return "EQUAL";
+            break;
+        case TokenType::DBL_EQUAL:
+            return "DOUBLE EQUAL";
+            break;
+        case TokenType::NOT_EQUAL:
+            return "NOT EQUAL";
             break;
         case TokenType::SEMI:
             return "SEMI";
@@ -107,6 +133,9 @@ const inline std::string ToString(TokenType type)
         
         case TokenType::INTEGER:
             return "INTEGER";
+            break;
+        case TokenType::STRING:
+            return "STRING";
             break;
 
         default:
