@@ -19,3 +19,9 @@ Se il file non è vuoto basterà riprovare finchè il compiler non darà questo 
 ## Debug
 
 Uno strumento che può aiutare il debugging è il parametro -dt che serve a stampare a schermo i token che ha analizzato il compiler, in questa maniera potrete verificare che il compiler abbia fatto il suo lavoro
+
+## Args
+
+Oltre al parametro illustrato precedentemente ce ne sono altri 2:
+`-i`  seguito dal file da compilare                     ( Obbligatorio )
+`-op` il percorso dove creare il file assembly out.asm  ( Facoltativo  )

@@ -37,6 +37,10 @@ int main(int argc, char* argv[])
     }
 
     std::fstream file(file_name, std::ios::in);
+    if(file_name == ""){
+        std::cerr << "Specificare il file in input!" << std::endl;
+        return 1;
+    }
     if (!file.is_open() || file.fail()) {
         std::cerr << "Errore nell'apertura del file!" << std::endl;
         return 1;
