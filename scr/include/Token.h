@@ -17,6 +17,7 @@ enum TokenType
     EXIT,
     PRINT,
     PRINTLN,
+    INPUT,
 
     OPEN_PAREN,
     CLOSE_PAREN,
@@ -83,6 +84,9 @@ const inline std::string ToString(TokenType type)
             break;
         case TokenType::PRINTLN:
             return "PRINTLN";
+            break;
+        case TokenType::INPUT:
+            return "INPUT";
             break;
         
         case TokenType::OPEN_PAREN:

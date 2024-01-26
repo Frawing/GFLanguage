@@ -65,6 +65,10 @@ std::vector<Token> Tokenizer::tokenize()
                 tokens.push_back({ TokenType::PRINT, line_count });
                 buf.clear();
             }
+            else if(buf == "input"){
+                tokens.push_back({ TokenType::INPUT, line_count });
+                buf.clear();
+            }
 
             else{
                 tokens.push_back({ TokenType::IDENT, line_count, buf});

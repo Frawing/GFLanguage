@@ -48,9 +48,7 @@ int main(int argc, char* argv[])
 
     std::string file_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
-
-    std::cout << file_content << std::endl << std::endl;
-
+    
     std::cout << std::endl;
     std::cout << "GFL FILE     : " << file_name << std::endl;
     std::cout << "OUTPUT DIR   : " << out_file_path << std::endl;

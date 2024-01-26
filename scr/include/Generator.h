@@ -23,7 +23,7 @@ class Generator
         {
             /* Base Data */
             output_data << "section .data\n";
-            output_data << "    new_line:\n";
+            output_data << "    GF_new_line:\n";
             output_data << "        db 10, 0\n";
 
             /* Base Text */
@@ -32,7 +32,9 @@ class Generator
 
             /* Functions */
             /* Str Len */
-            output_text << "_strlen:\n";
+            // Input  | RDI => String
+            // Output | RAX => String Lenght
+            output_text << "GF__strlen:\n";
             push("rbx");
             push("rcx");
             output_text << "    mov rbx, rdi\n";

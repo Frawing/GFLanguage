@@ -104,7 +104,6 @@ void Generator::gen_text_expr(const NodeTextExpr* text_expr)
             std::string label = gen->create_label();
             gen->output_data << "    " << label << ":\n";
             gen->output_data << "        db \"" << text_string->token_string.value.value() << "\", 0\n";
-            gen->output_data << "    " << label << "_len equ $ - " << label << "\n";
             gen->output_text << "    mov rax, " << label << "\n";
             gen->push("rax");
             gen->output_text << "    mov rax, " << label << "\n";
@@ -261,7 +260,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
         {
             gen.gen_text_expr(stmt->text_expr);
             gen.pop("rdi");
-            gen.output_text << "    call _strlen\n";
+            gen.output_text << "    call GF__strlen\n";
             gen.pop("rsi");
             gen.output_text << "    mov rdx, rax\n";
             gen.output_text << "    mov rax, 1\n";
@@ -269,11 +268,35 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             gen.output_text << "    syscall\n";
 
             if(stmt->new_line){
-                gen.output_text << "    mov rsi, new_line\n";
+                gen.output_text << "    mov rsi, GF_new_line\n";
                 gen.output_text << "    mov rdx, 2\n";
                 gen.output_text << "    mov rax, 1\n";
                 gen.output_text << "    mov rdi, 1\n";
                 gen.output_text << "    syscall\n";
+            }
+        }
+
+        const void operator()(const NodeStmtInput* stmt)
+        {
+            std::string label = gen.create_label();
+            gen.output_data << "    " << label << " resb 255\n";
+            gen.output_text << "    mov rdx, 255\n";
+            gen.output_text << "    mov rsi," << label << "\n";
+            gen.output_text << "    mov rdi, 1\n";
+            gen.output_text << "    mov rax, 0\n";
+            gen.output_text << "    syscall\n";
+            
+            if(stmt->var.has_value())
+            {
+                auto it = std::find_if(gen.variables.cbegin(), gen.variables.cend(),
+                            [&](const Var& var) { return var.name == stmt->var.value()->token_ident.value.value(); });
+                if(it != gen.variables.cend())
+                {
+                    std::cerr << "La variabile '" << stmt->var.value()->token_ident.value.value() << "' è già stata dichiarata!" << std::endl;
+                    exit(1);
+                }
+                gen.variables.push_back({stmt->var.value()->token_ident.value.value(), gen.stack_size});
+                gen.push(label);
             }
         }
 
@@ -290,6 +313,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             gen.variables.push_back({stmt->token_ident.value.value(), gen.stack_size});
             gen.gen_expr(stmt->expr);
         }
+
         const void operator()(const NodeStmtAssign* stmt)
         {
             auto it = std::find_if(gen.variables.cbegin(), gen.variables.cend(),

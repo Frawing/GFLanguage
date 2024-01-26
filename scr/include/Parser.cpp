@@ -288,6 +288,25 @@ std::optional<NodeStmt*> Parser::parse_stmt()
         }
     }
 
+    else if(auto token_stmt_input = try_consume(TokenType::INPUT))
+    {
+        try_consume(TokenType::OPEN_PAREN, "(", token_stmt_input.value().line);
+
+        auto node_stmt_input = allocator.alloc<NodeStmtInput>();
+        
+        if(peek().has_value() && peek().value().type == TokenType::IDENT){
+            auto text_ident = allocator.emplace<NodeTextIdent>(consume());
+            std::optional<NodeTextIdent*> var = text_ident;
+            node_stmt_input->var = var;
+        }
+
+        try_consume(TokenType::CLOSE_PAREN, ")", token_stmt_input.value().line);
+        try_consume(TokenType::SEMI, ";", token_stmt_input.value().line);
+
+        auto node_stmt = allocator.emplace<NodeStmt>(node_stmt_input);
+        return node_stmt;
+    }
+
     else if(auto token_stmt_let = try_consume(TokenType::LET))
     {
         if(peek().has_value() && peek().value().type == TokenType::IDENT)

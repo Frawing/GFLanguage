@@ -18,6 +18,10 @@ $$
         \\
         print( [TextExpr] );
         \\
+        input();
+        \\
+        input( [TextIdent] );
+        \\
         let \space ident = [Expr];
         \\
         ident = [Expr];
@@ -27,13 +31,32 @@ $$
         if ( [IntExpr] [CompSimb] [IntExpr] ) [Scope] [IfPred]^*
     
     \end{cases}
+
+    \\
+
+    [Ident] &\to
+    \begin{cases}
+    
+        [TextIdent]
+        \\
+        [IntIdent]
+    
+    \end{cases}
+
+    \\
+
+    [TextIdent] &\to let \space ident = [TextExpr]
+
+    \\
+
+    [IntIdent] &\to let \space ident = [IntExpr]
     
     \\
 
     [IfPred] &\to
     \begin{cases}
     
-        elif ( [IntExpr] [CombSimb] [IntExpr] ) [Scope] [IfPred]
+        elif ( [IntExpr] [CompSimb] [IntExpr] ) [Scope] [IfPred]
         \\
         else [Scope]
         \\

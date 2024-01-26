@@ -17,7 +17,7 @@ ARGS = -i ./GFL/main.gfl -op ./build/ -dt true
 all: clean compile clear run_compiler
 
 compile:
-	$(CC) $(FLAGS) $(SOURCE) -o $(COMPILER_PROGRAM) 
+	$(CC) -g $(FLAGS) $(SOURCE) -o $(COMPILER_PROGRAM)
 
 run_compiler:
 	$(COMPILER_PROGRAM) $(ARGS)

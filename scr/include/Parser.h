@@ -104,6 +104,11 @@ struct NodeStmtPrint
     bool new_line = false;
 };
 
+struct NodeStmtInput
+{
+    std::optional<NodeTextIdent*> var;
+};
+
 struct NodeStmtLet{
     Token token_ident;
     NodeExpr* expr;
@@ -151,7 +156,8 @@ struct NodeStmt
 {
     std::variant<NodeStmtLet*, NodeStmtAssign*,
                  NodeStmtIf*, NodeScope*,
-                 NodeStmtExit*, NodeStmtPrint*> value;
+                 NodeStmtExit*, NodeStmtPrint*,
+                 NodeStmtInput*> value;
 };
 
 struct NodeProg{

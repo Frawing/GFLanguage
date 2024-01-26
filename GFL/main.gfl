@@ -1,11 +1,10 @@
-let x = 1;
+print("Nome : ");
+input(var_nome);
+print("Cognome : ");
+input();
+print("Intelligente? : ");
+input();
+print("Tanto? : ");
+input();
 
-if(x > 2){
-    println("X è maggiore di 2");
-}elif(x == 2){
-    println("X è uguale a 2");
-}else{
-    println("X è minore di 2");
-}
-
-exit(0);
+println(var_nome);
