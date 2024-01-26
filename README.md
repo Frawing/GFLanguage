@@ -1,5 +1,9 @@
 # GFLanguage
 
+## About
+
+Ho iniziato lo sviluppo di questo compiler grazie alla serie 'Creating a Compiler' di Pixeled che potete trovare su [youtube](https://www.youtube.com/playlist?list=PLUDlas_Zy_qC7c5tCgTMYq2idyyT241qs).
+
 ## Documentation
 
 Coming soon...
