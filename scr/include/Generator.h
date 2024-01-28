@@ -34,7 +34,7 @@ class Generator
             /* Str Len */
             // Input  | RDI => String
             // Output | RAX => String Lenght
-            output_text << "GF__strlen:\n";
+            output_text << "GF_strlen:\n";
             push("rbx");
             push("rcx");
             output_text << "    mov rbx, rdi\n";
@@ -45,6 +45,22 @@ class Generator
             output_text << "    mov rax, rdi\n";
             pop("rcx");
             pop("rbx");
+            output_text << "    ret\n";
+            /* Remove New Line */
+            output_text << "GF_try_remove_nl: \n";
+            push("rdi");
+            output_text << "    mov rax, rdi\n";
+            output_text << "GF_GF_find_nl: \n";
+            output_text << "    cmp byte [rax], 10\n";
+            output_text << "    je  GF_GF_found_newline\n";
+            output_text << "    cmp byte [rax], 0\n";
+            output_text << "    je  GF_GF_end_remove\n";
+            output_text << "    inc rax\n";
+            output_text << "    jmp GF_GF_find_nl\n";
+            output_text << "GF_GF_found_newline: \n";
+            output_text << "    mov byte [rax], 0\n";
+            output_text << "GF_GF_end_remove: \n";
+            pop("rdi");
             output_text << "    ret\n";
 
             /* Start */

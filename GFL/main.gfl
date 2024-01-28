@@ -1,10 +1,6 @@
-print("Nome : ");
-input(var_nome);
-print("Cognome : ");
-input();
-print("Intelligente? : ");
-input();
-print("Tanto? : ");
-input();
+print("Nome: ");
+input(nome);
 
-println(var_nome);
+print("Quindi ");
+print(nome);
+println(" è il tuo nome!");

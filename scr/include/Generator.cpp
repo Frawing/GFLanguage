@@ -260,7 +260,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
         {
             gen.gen_text_expr(stmt->text_expr);
             gen.pop("rdi");
-            gen.output_text << "    call GF__strlen\n";
+            gen.output_text << "    call GF_strlen\n";
             gen.pop("rsi");
             gen.output_text << "    mov rdx, rax\n";
             gen.output_text << "    mov rax, 1\n";
@@ -280,11 +280,14 @@ void Generator::gen_stmt(const NodeStmt* stmt)
         {
             std::string label = gen.create_label();
             gen.output_data << "    " << label << " resb 255\n";
-            gen.output_text << "    mov rdx, 255\n";
+            gen.output_text << "    mov rdx, 256\n";
             gen.output_text << "    mov rsi," << label << "\n";
             gen.output_text << "    mov rdi, 1\n";
             gen.output_text << "    mov rax, 0\n";
             gen.output_text << "    syscall\n";
+
+            gen.output_text << "    mov rdi, " << label << "\n";
+            gen.output_text << "    call GF_try_remove_nl \n";
             
             if(stmt->var.has_value())
             {
