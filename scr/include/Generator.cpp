@@ -332,6 +332,25 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             gen.output_text << "    mov [rsp + " << (gen.stack_size - it->stack_pos - 1) * 8 << "], rax\n";
         }
 
+        const void operator()(const NodeStmtAssignInDecrease* stmt)
+        {
+            auto it = std::find_if(gen.variables.cbegin(), gen.variables.cend(),
+                        [&](const Var& var) { return var.name == stmt->token_ident.value.value(); });
+            
+            if(it == gen.variables.cend())
+            {
+                std::cerr << "Undeclared variable : '" << stmt->token_ident.value.value() << "'!" << std::endl;
+                exit(1);
+            }
+            gen.gen_expr(stmt->expr);
+            gen.pop("rax");
+            if(stmt->isDecrease){
+                gen.output_text << "    sub [rsp + " << (gen.stack_size - it->stack_pos - 1) * 8 << "], rax\n";
+            }else{
+                gen.output_text << "    add [rsp + " << (gen.stack_size - it->stack_pos - 1) * 8 << "], rax\n";
+            }
+        }
+
         const void operator()(const NodeScope* scope) {
             gen.gen_scope(scope);
         }
@@ -375,6 +394,46 @@ void Generator::gen_stmt(const NodeStmt* stmt)
                 gen.gen_if_pred(if_stmt->pred.value(), end_label);
                 gen.output_text <<  end_label << ":\n";
             }
+        }
+
+        const void operator()(const NodeStmtWhile* while_stmt)
+        {
+            std::string start_label = gen.create_label();
+            std::string end_label = gen.create_label();
+
+            gen.output_text << start_label << ":\n";
+
+            gen.gen_int_expr(while_stmt->int_expr_1);
+            gen.gen_int_expr(while_stmt->int_expr_2);
+            gen.pop("rbx");
+            gen.pop("rax");
+
+            switch (while_stmt->comp_simb->token_simb.type)
+            {
+                case TokenType::MAJOR:
+                    gen.output_text << "    cmp rax, rbx\n";
+                    gen.output_text << "    jle " << end_label << "\n"; // jump if less or equal
+                    break;
+                case TokenType::MINOR:
+                    gen.output_text << "    cmp rax, rbx\n";
+                    gen.output_text << "    jge " << end_label << "\n"; // jump if greater or equal
+                    break;
+                case TokenType::DBL_EQUAL:
+                    gen.output_text << "    cmp rax, rbx\n";
+                    gen.output_text << "    jne " << end_label << "\n"; // jump if greater or equal
+                    break;
+                case TokenType::NOT_EQUAL:
+                    gen.output_text << "    cmp rax, rbx\n";
+                    gen.output_text << "    je " << end_label << "\n"; // jump if greater or equal
+                    break;
+
+                default:
+                    break;
+            }
+            
+            gen.gen_scope(while_stmt->scope);
+            gen.output_text << "    jmp " << start_label << "\n";
+            gen.output_text << end_label << ":\n";
         }
     };
 

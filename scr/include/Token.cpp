@@ -53,6 +53,11 @@ std::vector<Token> Tokenizer::tokenize()
                 buf.clear();
             }
 
+            else if(buf == "while"){
+                tokens.push_back({ TokenType::WHILE, line_count });
+                buf.clear();
+            }
+
             else if(buf == "exit"){
                 tokens.push_back({ TokenType::EXIT, line_count });
                 buf.clear();
@@ -175,9 +180,18 @@ std::vector<Token> Tokenizer::tokenize()
 
                 case '+':
                     consume();
-                    tokens.push_back({ TokenType::PLUS, line_count });
-                    buf.clear();
-                    break;
+                    if(peek().has_value() && peek().value() == '=')
+                    {
+                        consume();
+                        tokens.push_back({ TokenType::INCREASE, line_count });
+                        buf.clear();
+                        break;
+                    }else
+                    {
+                        tokens.push_back({ TokenType::PLUS, line_count });
+                        buf.clear();
+                        break;
+                    }
 
                 case '*':
                     consume();
@@ -187,9 +201,18 @@ std::vector<Token> Tokenizer::tokenize()
 
                 case '-':
                     consume();
-                    tokens.push_back({ TokenType::MINUS, line_count });
-                    buf.clear();
-                    break;
+                    if(peek().has_value() && peek().value() == '=')
+                    {
+                        consume();
+                        tokens.push_back({ TokenType::DECREASE, line_count });
+                        buf.clear();
+                        break;
+                    }else
+                    {
+                        tokens.push_back({ TokenType::MINUS, line_count });
+                        buf.clear();
+                        break;
+                    }
 
                 case '/':
                     consume();

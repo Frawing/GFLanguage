@@ -354,6 +354,45 @@ std::optional<NodeStmt*> Parser::parse_stmt()
                 exit(1);
             }
         }
+        else if(peek(1).has_value() && peek(1).value().type == TokenType::INCREASE)
+        {
+            auto node_stmt_assign = allocator.alloc<NodeStmtAssignInDecrease>();
+            node_stmt_assign->token_ident = consume();
+            consume();
+
+            if(auto node_expr = parse_expr()){
+                node_stmt_assign->expr = node_expr.value();
+
+                try_consume(TokenType::SEMI, ";", node_stmt_assign->token_ident.line);
+
+                auto node_stmt = allocator.emplace<NodeStmt>(node_stmt_assign);
+                return node_stmt;
+            }
+            else{
+                std::cerr << "Invalid expression!" << std::endl;
+                exit(1);
+            }
+        }
+        else if(peek(1).has_value() && peek(1).value().type == TokenType::DECREASE)
+        {
+            auto node_stmt_assign = allocator.alloc<NodeStmtAssignInDecrease>();
+            node_stmt_assign->token_ident = consume();
+            node_stmt_assign->isDecrease = true;
+            consume();
+
+            if(auto node_expr = parse_expr()){
+                node_stmt_assign->expr = node_expr.value();
+
+                try_consume(TokenType::SEMI, ";", node_stmt_assign->token_ident.line);
+
+                auto node_stmt = allocator.emplace<NodeStmt>(node_stmt_assign);
+                return node_stmt;
+            }
+            else{
+                std::cerr << "Invalid expression!" << std::endl;
+                exit(1);
+            }
+        }
     }
 
     else if(auto token_stmt_if = try_consume(TokenType::IF))
@@ -393,6 +432,45 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             return node_stmt;
         }else{
             error_invalid("scope", token_stmt_if.value().line);
+        }
+    }
+
+    else if(auto token_stmt_while = try_consume(TokenType::WHILE))
+    {
+        try_consume(TokenType::OPEN_PAREN, "(", token_stmt_while.value().line);
+
+        auto node_stmt_while = allocator.alloc<NodeStmtWhile>();
+        if(auto node_int_expr = parse_int_expr()){
+            node_stmt_while->int_expr_1 = node_int_expr.value();
+        }else{
+            error_expected("expression", token_stmt_while.value().line);
+        }
+
+        if(peek().has_value()){
+            if(peek().value().type != TokenType::MAJOR && peek().value().type != TokenType::MINOR &&
+               peek().value().type != TokenType::DBL_EQUAL && peek().value().type != TokenType::NOT_EQUAL)
+            {
+                error_expected("compare simbol", token_stmt_while.value().line);
+            }
+            auto node_comb_simb = allocator.emplace<NodeCompSimb>(consume());
+            node_stmt_while->comp_simb = node_comb_simb;
+        }
+
+        if(auto node_int_expr = parse_int_expr()){
+            node_stmt_while->int_expr_2 = node_int_expr.value();
+        }else{
+            error_expected("expression", token_stmt_while.value().line);
+        }
+
+        try_consume(TokenType::CLOSE_PAREN, ")", token_stmt_while.value().line);
+
+        if(auto scope = parse_scope()){
+            node_stmt_while->scope = scope.value();
+
+            auto node_stmt = allocator.emplace<NodeStmt>(node_stmt_while);
+            return node_stmt;
+        }else{
+            error_invalid("scope", token_stmt_while.value().line);
         }
     }
 

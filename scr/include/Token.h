@@ -13,6 +13,7 @@ enum TokenType
     IF,
     ELIF,
     ELSE,
+    WHILE,
 
     EXIT,
     PRINT,
@@ -28,6 +29,9 @@ enum TokenType
     MINUS,
     STAR,
     SLASH,
+
+    INCREASE,
+    DECREASE,
 
     MAJOR,
     MINOR,
@@ -75,6 +79,9 @@ const inline std::string ToString(TokenType type)
         case TokenType::ELSE:
             return "ELSE";
             break;
+        case TokenType::WHILE:
+            return "WHILE";
+            break;
 
         case TokenType::EXIT:
             return "EXIT";
@@ -114,7 +121,13 @@ const inline std::string ToString(TokenType type)
         case TokenType::SLASH:
             return "SLASH";
             break;
-        
+
+        case TokenType::INCREASE:
+            return "INCREASE";
+            break;
+        case TokenType::DECREASE:
+            return "DECREASE";
+            break;
 
         case TokenType::MAJOR:
             return "MAJOR";

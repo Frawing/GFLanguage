@@ -29,6 +29,8 @@ $$
         [Scope]
         \\
         if ( [IntExpr] [CompSimb] [IntExpr] ) [Scope] [IfPred]^*
+        \\
+        while ( [IntExpr] [CompSimb] [IntExpr] ) [Scope]
     
     \end{cases}
 
@@ -123,6 +125,21 @@ $$
         \\
         ( [IntExpr] )
 
+    \end{cases}
+
+    \\
+
+    [CompSimbs] &\to
+    \begin{cases}
+    
+        >
+        \\
+        <
+        \\
+        ==
+        \\
+        !=
+    
     \end{cases}
 
 \end{align}

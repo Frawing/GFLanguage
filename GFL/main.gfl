@@ -1,6 +1,9 @@
-print("Nome: ");
-input(nome);
+let x = 15;
 
-print("Quindi ");
-print(nome);
-println(" è il tuo nome!");
+while(x > 10)
+{
+    println("Wow");
+    x -= 1;
+}
+
+exit(x);

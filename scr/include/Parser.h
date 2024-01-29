@@ -119,8 +119,14 @@ struct NodeStmtAssign{
     NodeExpr* expr;
 };
 
-/* Conditions */
+struct NodeStmtAssignInDecrease
+{
+    Token token_ident;
+    NodeExpr* expr;
+    bool isDecrease = false;
+};
 
+/* If Elif Else */
 struct NodeScope{
     std::vector<NodeStmt*> stmts;
 };
@@ -150,12 +156,23 @@ struct NodeStmtIf
     std::optional<NodeIfPred*> pred;
 };
 
+/* While */
+struct NodeStmtWhile
+{
+    NodeIntExpr* int_expr_1;
+    NodeCompSimb* comp_simb;
+    NodeIntExpr* int_expr_2;
+    NodeScope* scope;
+};
+
+
 /* Other */
 
 struct NodeStmt
 {
-    std::variant<NodeStmtLet*, NodeStmtAssign*,
-                 NodeStmtIf*, NodeScope*,
+    std::variant<NodeStmtLet*, NodeStmtAssign*, NodeStmtAssignInDecrease*,
+                 NodeScope*,
+                 NodeStmtIf*, NodeStmtWhile*,
                  NodeStmtExit*, NodeStmtPrint*,
                  NodeStmtInput*> value;
 };
