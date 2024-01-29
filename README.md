@@ -6,7 +6,7 @@ Ho iniziato lo sviluppo di questo compiler grazie alla serie 'Creating a Compile
 
 ## Documentation
 
-Coming soon...
+Guarda la documentazione in 'Documentation.md'
 
 ## Grammar
 

@@ -48,14 +48,28 @@ print("Età: ");
 input();
 
 print("Nome: ");
-input(nome); #! Viene inserito automaticamente \n
+input(nome);
 
 print("Allora ti chiami ");
-print(nome);
+println(nome);
 
 print("Mi ricordi quanti anni hai? ")
 input(eta);
 
 print("Quindi hai ");
-print(eta)
+println(eta)
+```
+
+## While
+
+```Javascript
+
+let x = 15;
+
+while(x > 10)
+{
+   print("X è maggiore di 10");
+   x -= 1;
+}
+
 ```
